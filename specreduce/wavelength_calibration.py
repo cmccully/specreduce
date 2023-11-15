@@ -1,3 +1,4 @@
+from typing import Any
 from astropy.modeling.models import Linear1D
 from astropy.modeling.fitting import LMLSQFitter, LinearLSQFitter
 from astropy.table import QTable, hstack
@@ -7,6 +8,7 @@ from gwcs import wcs
 from gwcs import coordinate_frames as cf
 import numpy as np
 from specutils import Spectrum1D
+from astropy.nddata import NDData
 
 
 __all__ = ['WavelengthCalibration1D']
@@ -260,3 +262,13 @@ class WavelengthCalibration1D():
         updated_spectrum = Spectrum1D(spectrum.flux, wcs=self.wcs, mask=spectrum.mask,
                                       uncertainty=spectrum.uncertainty)
         return updated_spectrum
+
+
+class WavelengthCalibrator():
+    def __call__(self, data: NDData, extras: dict) -> Any:
+        real_wcs = extras['real_wcs']
+        return Spectrum1D(data.data * u.electron, wcs=real_wcs, meta=data.meta)
+
+    @property
+    def success(self) -> bool:
+        return True
